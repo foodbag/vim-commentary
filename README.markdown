@@ -1,5 +1,15 @@
 # commentary.vim
 
+Modified version of commentary.vim for fixed width formats. Used for putting 
+a comment character in a specific column (I.E. Fortran 77 needs the comment 
+character in the first column space). This commenting mode doesn't use 
+regular expressions, but instead column specific replacement (for example,
+a common Fortran 77 comment character is 'C' in column 1. If the line to be 
+commented out is "call subroutine\_a()", then a regex replacement might turn 
+"call..." into "all..." instead of putting a 'C' in column 1). Can be activated 
+using the variable g:commentary\_fixed. If g:commentary\_fixed is 0 (default), 
+the plugin behaves normally.
+
 Comment stuff out.  Use `gcc` to comment out a line (takes a count),
 `gc` to comment out the target of a motion (for example, `gcap` to
 comment out a paragraph), `gc` in visual mode to comment out the selection,

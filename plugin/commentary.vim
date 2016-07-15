@@ -1,4 +1,5 @@
 " commentary.vim - Comment stuff out
+" Modified by foodbag for fixed width commenting.
 " Maintainer:   Tim Pope <http://tpo.pe/>
 " Version:      1.3
 " GetLatestVimScripts: 3695 1 :AutoInstall: commentary.vim
@@ -7,6 +8,12 @@ if exists("g:loaded_commentary") || &cp || v:version < 700
   finish
 endif
 let g:loaded_commentary = 1
+if !exists("g:commentary_fixed")
+  let g:commentary_fixed = 0
+endif
+if !exists("g:commentary_fixed_pos")
+  let g:commentary_fixed_pos=0
+endif
 
 function! s:surroundings() abort
   return split(get(b:, 'commentary_format', substitute(substitute(
@@ -31,24 +38,49 @@ function! s:go(type,...) abort
   let [l_, r_] = s:surroundings()
   let uncomment = 2
   for lnum in range(lnum1,lnum2)
-    let line = matchstr(getline(lnum),'\S.*\s\@<!')
-    let [l, r] = s:strip_white_space(l_,r_,line)
-    if line != '' && (stridx(line,l) || line[strlen(line)-strlen(r) : -1] != r)
-      let uncomment = 0
+    if g:commentary_fixed
+      let line = getline(lnum)
+      if line != '' && line[g:commentary_fixed_pos] == ' '
+        let uncomment = 0
+      endif
+    else
+      let line = matchstr(getline(lnum),'\S.*\s\@<!')
+      let [l, r] = s:strip_white_space(l_,r_,line)
+      if line != '' && (stridx(line,l) || line[strlen(line)-strlen(r) : -1] != r)
+        let uncomment = 0
+      endif
     endif
   endfor
 
   for lnum in range(lnum1,lnum2)
     let line = getline(lnum)
-    if strlen(r) > 2 && l.r !~# '\\'
-      let line = substitute(line,
-            \'\M'.r[0:-2].'\zs\d\*\ze'.r[-1:-1].'\|'.l[0].'\zs\d\*\ze'.l[1:-1],
-            \'\=substitute(submatch(0)+1-uncomment,"^0$\\|^-\\d*$","","")','g')
-    endif
-    if uncomment
-      let line = substitute(line,'\S.*\s\@<!','\=submatch(0)[strlen(l):-strlen(r)-1]','')
+    if g:commentary_fixed
+      let r_f = &commentstring[:-3]
+      let r_f_len = strlen(r_f)
+      if uncomment
+        if g:commentary_fixed_pos == 0
+          let line = ' ' . line[g:commentary_fixed_pos+r_f_len:]
+        else
+          let line = line[0:g:commentary_fixed_pos-1] . ' ' . line[g:commentary_fixed_pos+r_f_len:]
+        endif
+      else
+        if g:commentary_fixed_pos == 0
+          let line = r_f . line[g:commentary_fixed_pos+1:]
+        else
+          let line = line[0:g:commentary_fixed_pos-1] . r_f . line[g:commentary_fixed_pos+1:]
+        endif
+      endif
     else
-      let line = substitute(line,'^\%('.matchstr(getline(lnum1),'^\s*').'\|\s*\)\zs.*\S\@<=','\=l.submatch(0).r','')
+      if strlen(r) > 2 && l.r !~# '\\'
+        let line = substitute(line,
+              \'\M'.r[0:-2].'\zs\d\*\ze'.r[-1:-1].'\|'.l[0].'\zs\d\*\ze'.l[1:-1],
+              \'\=substitute(submatch(0)+1-uncomment,"^0$\\|^-\\d*$","","")','g')
+      endif
+      if uncomment
+        let line = substitute(line,'\S.*\s\@<!','\=submatch(0)[strlen(l):-strlen(r)-1]','')
+      else
+        let line = substitute(line,'^\%('.matchstr(getline(lnum1),'^\s*').'\|\s*\)\zs.*\S\@<=','\=l.submatch(0).r','')
+      endif
     endif
     call setline(lnum,line)
   endfor
