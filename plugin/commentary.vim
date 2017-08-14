@@ -8,11 +8,11 @@ if exists("g:loaded_commentary") || &cp || v:version < 700
   finish
 endif
 let g:loaded_commentary = 1
-if !exists("g:commentary_fixed")
-  let g:commentary_fixed = 0
+if !exists("b:commentary_fixed")
+  let b:commentary_fixed = 0
 endif
-if !exists("g:commentary_fixed_pos")
-  let g:commentary_fixed_pos=0
+if !exists("b:commentary_fixed_pos")
+  let b:commentary_fixed_pos=0
 endif
 
 function! s:surroundings() abort
@@ -38,9 +38,9 @@ function! s:go(type,...) abort
   let [l_, r_] = s:surroundings()
   let uncomment = 2
   for lnum in range(lnum1,lnum2)
-    if g:commentary_fixed
+    if b:commentary_fixed
       let line = getline(lnum)
-      if line != '' && line[g:commentary_fixed_pos] == ' '
+      if line != '' && line[b:commentary_fixed_pos] == ' '
         let uncomment = 0
       endif
     else
@@ -54,20 +54,20 @@ function! s:go(type,...) abort
 
   for lnum in range(lnum1,lnum2)
     let line = getline(lnum)
-    if g:commentary_fixed
+    if b:commentary_fixed
       let r_f = &commentstring[:-3]
       let r_f_len = strlen(r_f)
       if uncomment
-        if g:commentary_fixed_pos == 0
-          let line = ' ' . line[g:commentary_fixed_pos+r_f_len:]
+        if b:commentary_fixed_pos == 0
+          let line = ' ' . line[b:commentary_fixed_pos+r_f_len:]
         else
-          let line = line[0:g:commentary_fixed_pos-1] . ' ' . line[g:commentary_fixed_pos+r_f_len:]
+          let line = line[0:b:commentary_fixed_pos-1] . ' ' . line[b:commentary_fixed_pos+r_f_len:]
         endif
       else
-        if g:commentary_fixed_pos == 0
-          let line = r_f . line[g:commentary_fixed_pos+1:]
+        if b:commentary_fixed_pos == 0
+          let line = r_f . line[b:commentary_fixed_pos+1:]
         else
-          let line = line[0:g:commentary_fixed_pos-1] . r_f . line[g:commentary_fixed_pos+1:]
+          let line = line[0:b:commentary_fixed_pos-1] . r_f . line[b:commentary_fixed_pos+1:]
         endif
       endif
     else
