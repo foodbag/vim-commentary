@@ -8,12 +8,6 @@ if exists("g:loaded_commentary") || &cp || v:version < 700
   finish
 endif
 let g:loaded_commentary = 1
-if !exists("b:commentary_fixed")
-  let b:commentary_fixed = 0
-endif
-if !exists("b:commentary_fixed_pos")
-  let b:commentary_fixed_pos=0
-endif
 
 function! s:surroundings() abort
   return split(get(b:, 'commentary_format', substitute(substitute(
@@ -29,6 +23,14 @@ function! s:strip_white_space(l,r,line) abort
 endfunction
 
 function! s:go(type,...) abort
+
+  if !exists("b:commentary_fixed")
+    let b:commentary_fixed = 0
+  endif
+  if !exists("b:commentary_fixed_pos")
+    let b:commentary_fixed_pos=0
+  endif
+
   if a:0
     let [lnum1, lnum2] = [a:type, a:1]
   else
